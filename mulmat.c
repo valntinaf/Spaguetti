@@ -15,28 +15,29 @@ int main(int argv, char* argc[]){
 	int matc[N][N];		//Producto de la multiplicación.
 
 	char str[99];
-	int fil=0;
-	int col=0;
-	int temp;
+	int fil=0;			//Será en todos los ciclos el indicador de la fila.
+	int col=0;			//Será en todos los ciclos el indicador de la columna.
+	int temp;			//Es un número temporal que será el dato a agregar en cada una de las posiciones de las matrices.
 	if(filea){
 		do{
-			fscanf(filea,"%s",str);
-			temp=atoi(str);			
-			mata[fil][col]=temp;	//Se lee el número en la posición correspondiente.
-			if(col==(N-1)){
-				col=0;
-				fil++;
+			fscanf(filea,"%s",str);		//Se lee la linea en el arreglo str.
+			temp=atoi(str);				//La variable temp almacena el dato que convierte la función atoi.
+			mata[fil][col]=temp;		//Se registra el número en la posición correspondiente.
+
+			if(col==(N-1)){				//La columna aumenta hasta que sobrepase el límite dado por N.
+				col=0;					//Entonces se reinicia la columna.	
+				fil++;					//Y la fila aumenta.
 			}
 			else{
-				col++;
+				col++;					//Sino la columna aumenta.
 			}
-		}while((fil)<N);
-		fclose(filea);
+		}while((fil)<N);				//Se realiza hasta que la fila supere el límite dado por N.
+		fclose(filea);					//Finalmente el archivo se cierra.
 	}
 
 	fil=0;
 	col=0;
-	if(fileb){
+	if(fileb){							//Aquí se realiza el mismo procedimiento pero se llena ahora la matriz b.
 		do{
 			fscanf(fileb,"%s",str);
 			temp=atoi(str);			
@@ -56,8 +57,16 @@ int main(int argv, char* argc[]){
 	temp=0;
 	int cont=0;
 	do{
-		while(cont<N){
-			temp+=(mata[fil][cont])*(matb[cont][col]);
+		while(cont<N){			//En este ciclo se realiza la multiplicacion de las matrices.
+
+			/*
+			El número temporal almacenará el valor durante la resolución de cada casilla de la matriz C.
+			Para la resolución, (dentro del ciclo) en la matriz A se opera en la misma fila y en la ma-
+			triz B se opera en la misma columna. Es decir, fil y col son constantes siendo fil la fila 
+			en donde se opera A y col la columna donde se opera B. El ciclo se realiza N veces, ya que 
+			es una matriz cuadrada.
+			*/
+			temp+=(mata[fil][cont])*(matb[cont][col]);		
 			cont++;
 		}
 		matc[fil][col]=temp;	//Se lee el número en la posición correspondiente.
