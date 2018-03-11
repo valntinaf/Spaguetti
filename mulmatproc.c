@@ -7,7 +7,7 @@
 #define WRITE 1
 int main(int argv, char* argc[]){
 	
-	if(argv<4){
+	if(argv<5){
         printf("Ejecute el programa de la forma \"./proc [número_de_filas] [archivo1.txt] [archivo2.txt]\"");
         return 1;
     }
@@ -19,6 +19,8 @@ int main(int argv, char* argc[]){
 
 	FILE* fileb;
 	fileb = fopen(argc[3],"r");	//Se abre un apuntador FILE para leer el segundo archivo.
+
+	FILE* fileo =fopen(argc[4],"w");
 
 	int mata[N][N];		//Primer factor de la multiplicación.
 	int matb[N][N];		//Segundo factor de la multiplicación.
@@ -72,7 +74,7 @@ int main(int argv, char* argc[]){
 
 	int cont=0, cant=0, cent=0;;
 	int val=0;
-	int fd[N];
+	int fd[N*N];
 	pipe(fd);
 
 	while(cont<N){
@@ -82,24 +84,17 @@ int main(int argv, char* argc[]){
 					val+=mata[cont][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
 					cent++;
 				}
+				fprintf(fileo, "%d:%d ",cont*N+cant, val);
 				nums[cant]=val;
 				val=0;
 				cent=0;
 				cant++;
 			}
 			nums[N]=cont;	//La última posición del arreglo será el número del proceso, es decir, la fila de la matriz C.
-			write(fd,nums,sizeof(nums));
 			exit(0);
 		}
 		cont++;
 	}
 
-	cont=0;
-	while(cont<N){
-		if(read(fd,nums,sizeof(nums))!=-1){
-			printf("Arreglo %d recibido%s\n",nums[N]);
-			cont++;
-		}
-	}
 	return 0;
 }
