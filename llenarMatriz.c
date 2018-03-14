@@ -13,7 +13,7 @@ int main(int argv, const char *argc[] ) {
 	for(int i = 0; i < N; i++) {
 
 	   for(int j = 0; j<N; j++) {
-	   	fprintf(file,"%d %c",rand(),' ');
+	   	fprintf(file,"%d %c",rand()/rand(),' ');
 	   }
 	 fprintf(file, "\n");
 	}

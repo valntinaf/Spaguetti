@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <math.h>
 
 #define	READ 0
 #define WRITE 1
 int main(int argv, char* argc[]){
 	
-	if(argv<7){
-        printf("Ejecute el programa de la forma \"./proc [número_de_filas] [archivo1.txt] [archivo2.txt]\"");
+	if(argv<6){
+        printf("Ejecute el programa de la forma \"./proc [número_de_filas] [número_de_procesos] [archivo1.txt] [archivo2.txt] [archivo3.txt]\"");
         return 1;
     }
 
@@ -91,23 +92,32 @@ int main(int argv, char* argc[]){
 
 	//Se crean las tuberías
 
-	int cont=0, cant=0, cent=0, cint=0,pre=0;;
+	int cont=1, cant=0, cent=0, cint=0,pre=0;;
 	int val=0;
-
+	int tempe;
 	//printf("Creando archivo %s.\n",argc[4]);
 	FILE* fileo =fopen(argc[5],"w");
 	pid_t wpid=0;
-	while(cont<pro){
+	while(cont<=pro){
 		if(!fork()){
 			//printf("Proceso creado.\n");
-			pre=cont+(pro/N);
+			pre=(int) ceil( N/pro )+1;
+			
+			while( N-(cont*pre) < pro-cont){
+				//pre=(pro-cont+1)/(N- (cont*pre));
+				pre=pre-1;
+			}
+
+			cint=0;
 			while(cint<pre){
+				printf("Leyendo fila %d\n", cont-1+cint);
 				while(cant<N){
+
 				while(cent<N){
-					val+=mata[cont][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
+					val+=mata[cont-1+cint][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
 					cent++;
 				}
-				fprintf(fileo, "%d %d\n",cont*N+cant, val);
+				fprintf(fileo, "%d %d\n",(cont-1+cint)*N+cant, val);
 				nums[cant]=val;
 				val=0;
 				cent=0;
@@ -115,9 +125,6 @@ int main(int argv, char* argc[]){
 			}
 			cint++;
 			}
-
-			nums[N]=cont;	//La última posición del arreglo será el número del proceso, es decir, la fila de la matriz C.
-			//printf("Proceso %d terminado.\n",getpid());
 			exit(0);
 		}
 		cont++;
