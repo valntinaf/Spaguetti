@@ -7,7 +7,7 @@
 #define WRITE 1
 int main(int argv, char* argc[]){
 	
-	if(argv<5){
+	if(argv<7){
         printf("Ejecute el programa de la forma \"./proc [número_de_filas] [archivo1.txt] [archivo2.txt]\"");
         return 1;
     }
@@ -15,11 +15,12 @@ int main(int argv, char* argc[]){
     int N=atoi(argc[1]); //Es el número de filas y columnas de la matriz.
 
 	FILE* filea;
-	filea = fopen(argc[2],"r");	//Se abre un apuntador FILE para leer el primer archivo.
+	filea = fopen(argc[3],"r");	//Se abre un apuntador FILE para leer el primer archivo.
 
 	FILE* fileb;
-	fileb = fopen(argc[3],"r");	//Se abre un apuntador FILE para leer el segundo archivo.
+	fileb = fopen(argc[4],"r");	//Se abre un apuntador FILE para leer el segundo archivo.
 
+	int pro=atoi(argc[2]);
 	int **mata;		//Primer factor de la multiplicación.
 	int **matb;		//Segundo factor de la multiplicación.
 	int **matc;		//Producto de la multiplicación.
@@ -90,16 +91,18 @@ int main(int argv, char* argc[]){
 
 	//Se crean las tuberías
 
-	int cont=0, cant=0, cent=0;;
+	int cont=0, cant=0, cent=0, cint=0,pre=0;;
 	int val=0;
 
 	//printf("Creando archivo %s.\n",argc[4]);
-	FILE* fileo =fopen(argc[4],"w");
+	FILE* fileo =fopen(argc[5],"w");
 	pid_t wpid=0;
-	while(cont<N){
+	while(cont<pro){
 		if(!fork()){
 			//printf("Proceso creado.\n");
-			while(cant<N){
+			pre=cont+(pro/N);
+			while(cint<pre){
+				while(cant<N){
 				while(cent<N){
 					val+=mata[cont][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
 					cent++;
@@ -110,6 +113,9 @@ int main(int argv, char* argc[]){
 				cent=0;
 				cant++;
 			}
+			cint++;
+			}
+
 			nums[N]=cont;	//La última posición del arreglo será el número del proceso, es decir, la fila de la matriz C.
 			//printf("Proceso %d terminado.\n",getpid());
 			exit(0);
@@ -117,7 +123,7 @@ int main(int argv, char* argc[]){
 		cont++;
 	}
 	fclose(fileo);
-	fileo =fopen(argc[4],"r");
+	fileo =fopen(argc[5],"r");
 	int fi, co, t=0, status=0;
 
 	while ((wpid = wait(&status)) > 0);
@@ -142,7 +148,7 @@ int main(int argv, char* argc[]){
 	}
 
 	fclose(fileo);
-	fileo =fopen(argc[4],"w");
+	fileo =fopen(argc[5],"w");
 
 	int nio=0;
 	int nao=0;
