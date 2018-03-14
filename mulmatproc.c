@@ -20,15 +20,32 @@ int main(int argv, char* argc[]){
 	FILE* fileb;
 	fileb = fopen(argc[3],"r");	//Se abre un apuntador FILE para leer el segundo archivo.
 
-	int mata[N][N];		//Primer factor de la multiplicación.
-	int matb[N][N];		//Segundo factor de la multiplicación.
-	int matc[N][N];		//Producto de la multiplicación.
+	int **mata;		//Primer factor de la multiplicación.
+	int **matb;		//Segundo factor de la multiplicación.
+	int **matc;		//Producto de la multiplicación.
 
 	char str[99];
 	int fil=0;			//Será en todos los ciclos el indicador de la fila.
 	int col=0;			//Será en todos los ciclos el indicador de la columna.
 	int temp;			//Es un número temporal que será el dato a agregar en cada una de las posiciones de las matrices.
-	printf("Leyendo matriz 1...\n");
+
+	mata = malloc(N * sizeof(int *));
+	matb = malloc(N * sizeof(int *));
+	matc = malloc(N * sizeof(int *));
+
+	for(int row = 0; row < N; ++row){
+		mata[row] = malloc(N * sizeof(int));
+	}
+	for(int row = 0; row < N; ++row) {
+		matb[row] = malloc(N * sizeof(int));
+	}
+	for(int row = 0; row < N; ++row) {
+		matc[row] = malloc(N * sizeof(int));
+	}
+
+
+
+	//printf("Leyendo matriz 1...\n");
 	if(filea){
 		do{
 			fscanf(filea,"%s",str);		//Se lee la linea en el arreglo str.
@@ -48,7 +65,7 @@ int main(int argv, char* argc[]){
 
 	fil=0;
 	col=0;
-	printf("Leyendo matriz 2...\n");
+	//printf("Leyendo matriz 2...\n");
 	if(fileb){							//Aquí se realiza el mismo procedimiento pero se llena ahora la matriz b.
 		do{
 			fscanf(fileb,"%s",str);
@@ -64,7 +81,7 @@ int main(int argv, char* argc[]){
 		}while((fil)<N);
 		fclose(fileb);
 	}
-
+	
 	int nums[N+1];
 	for(int i=0;i<N;i++){
 		nums[i]=0;
@@ -76,12 +93,12 @@ int main(int argv, char* argc[]){
 	int cont=0, cant=0, cent=0;;
 	int val=0;
 
-	printf("Creando archivo %s.\n",argc[4]);
+	//printf("Creando archivo %s.\n",argc[4]);
 	FILE* fileo =fopen(argc[4],"w");
 	pid_t wpid=0;
 	while(cont<N){
 		if(!fork()){
-			printf("Proceso creado.\n");
+			//printf("Proceso creado.\n");
 			while(cant<N){
 				while(cent<N){
 					val+=mata[cont][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
@@ -94,7 +111,7 @@ int main(int argv, char* argc[]){
 				cant++;
 			}
 			nums[N]=cont;	//La última posición del arreglo será el número del proceso, es decir, la fila de la matriz C.
-			printf("Proceso %d terminado.\n",getpid());
+			//printf("Proceso %d terminado.\n",getpid());
 			exit(0);
 		}
 		cont++;
@@ -105,7 +122,7 @@ int main(int argv, char* argc[]){
 
 	while ((wpid = wait(&status)) > 0);
 
-	printf("Ordenando datos...\n");
+	//printf("Ordenando datos...\n");
 	cent=0;
 	int g;
 	int mul=N*N*2;
@@ -136,7 +153,7 @@ int main(int argv, char* argc[]){
 			if(nio==(N-1)){
 				nao++;
 				nio=0;
-				fprintf(fileo, "\n","");
+				fprintf(fileo, "\n");
 			}
 			else{
 				nio++;
