@@ -20,6 +20,8 @@ int main(int argv, char* argc[]){
 	FILE* fileb;
 	fileb = fopen(argc[4],"r");	//Se abre un apuntador FILE para leer el segundo archivo.
 
+	FILE* fileo;	//Variable usada para escribir en el archivo resultante.
+
 	int pro=atoi(argc[2]);
 	int **mata;		//Primer factor de la multiplicación.
 	int **matb;		//Segundo factor de la multiplicación.
@@ -34,19 +36,16 @@ int main(int argv, char* argc[]){
 	matb = malloc(N * sizeof(int *));
 	matc = malloc(N * sizeof(int *));
 
-	for(int row = 0; row < N; ++row){
+	for(int row = 0; row < N; ++row){			//Los valores se asignan en memoria dinámica.
 		mata[row] = malloc(N * sizeof(int));
 	}
-	for(int row = 0; row < N; ++row) {
+	for(int row = 0; row < N; ++row) {			
 		matb[row] = malloc(N * sizeof(int));
 	}
 	for(int row = 0; row < N; ++row) {
 		matc[row] = malloc(N * sizeof(int));
 	}
 
-
-
-	//printf("Leyendo matriz 1...\n");
 	if(filea){
 		do{
 			fscanf(filea,"%s",str);		//Se lee la linea en el arreglo str.
@@ -67,7 +66,6 @@ int main(int argv, char* argc[]){
 	fil=0;
 	col=0;
 
-	//printf("Leyendo matriz 2...\n");
 	if(fileb){							//Aquí se realiza el mismo procedimiento pero se llena ahora la matriz b.
 		do{
 			fscanf(fileb,"%s",str);
@@ -86,29 +84,33 @@ int main(int argv, char* argc[]){
 	
 	//Fin de la lectura de matrices.
 
-	int status=0;
-	int cont=1, cant=0, cent=0, cint=0, pos=0, pre=0;
-	long val=0;
-	double div= ((double)N)/((double)pro);
-	int tempe;
-	pid_t wpid=0;
-	FILE* fileo;
-	char namef[20];
-	char intt[10];
+	pid_t wpid=0;			//Variable usada en el wait.
+	int status=0;			//Variable usada en el wait.
+	
+	int cont=1;		//Contador iterando por cada proceso.
+	int cint=0;		//Contador iterando por cada columna.
+	int cant=0; 	//Contador iterando por cada fila.
+	int cent=0; 	//Contador iterand dentro de la casilla de matc.
+	int pos=0, pre=0;	//Posiciones que facilitan la ubicación de los procesos.
+	long val=0;			//Almacenamiento temporal del dato de la casilla en matc.
+	
+	char namef[20];		//Se almacenará aquí el nombre de los archivos temporales.		
+	char intt[10];		//Se almacenará aquí el número del archivo temporal actual.
 
 	int job[pro];		//Arreglo en donde a cada proceso se le asigna un número de filas.
 	int start[pro];		//Arreglo en donde a cada proceso se le asigna la posición inicial desde donde multiplicar.
 	int sumi=0;
+	double div= ((double)N)/((double)pro);
 
 	for(int i=1;i<=pro;i++){	//Se le asigna el trabajo al proceso.
 		
 		start[i-1]=sumi;
 		pre=ceil(div);
-		while( (pro-i+1)*pre > N-sumi ){
+		while( (pro-i+1)*pre > N-sumi ){		//Si el número de columnas que quedan es menor al número de procesos necesarios.
 			pre--;
 		}
 		sumi+=pre;
-		job[i-1]=pre;
+		job[i-1]=pre;		//El trabajo se guarda en el arreglo.
 	}
 
 	while(cont<=pro){		//Se crean N hijos.
@@ -117,6 +119,7 @@ int main(int argv, char* argc[]){
 			strcpy(namef, "file");
 			strcat(namef,intt);
 			strcat(namef,".txt");
+
 			fileo=fopen(namef,"w");		//Cada proceso maneja su propio archivo.
 			pre=job[cont-1];
 			pos=start[cont-1];			
@@ -142,62 +145,48 @@ int main(int argv, char* argc[]){
 		cont++;
 	}
 	while ((wpid = wait(&status)) > 0);
-	
-
-	fileo =fopen(argc[5],"r");
-	int fi, co, t=0;
 
 	cent=0;
-	int g;
-
+	int data;		//Almacenamiento temporal de datos.
 	int cunt=0;
 	while(cunt<pro){		//El padre lee todos los archivos generados por los hijos.
-		sprintf(intt, "%d", cunt+1);
-		strcpy(namef, "file");
-		strcat(namef,intt);
-		strcat(namef,".txt");	
-		fileo=fopen(namef,"r");	
-		if(fileo){
-			while(!feof(fileo)){
-			fscanf(fileo,"%d %d %d\n",&fi,&co,&g);
-			//printf("%d %d \n",g,t);
-				if(fi<N && co<N){
-					matc[fi][co]=g;
+		//Se obtiene el nombre del archivo:
+		sprintf(intt, "%d", cunt+1); strcpy(namef, "file"); strcat(namef,intt); strcat(namef,".txt");	
+		fileo=fopen(namef,"r");		//Se abre el archivo en modo lectura.	
+		if(fileo){					//Si la apertura fue exitosa.
+			while(!feof(fileo)){	//El archivo será leído hasta el final.
+			fscanf(fileo,"%d %d %d\n",&fil,&col,&data);	//Se obtienen los valores en cada variable. 
+				if(fil<N && col<N){		//Condición por seguridad.
+					matc[fil][col]=data;	//El valor se almacena en la matriz C.
 				}
 			}
-			cent++;
 		}
-		fclose(fileo);
+		fclose(fileo);				//Finalmente el archivo se cierra.
 		cunt++;
 	}
 
-	fileo =fopen(argc[5],"w");
+	fileo =fopen(argc[5],"w");		//Se lee el archio indicado por el usuario, si no existe se crea.
 
-	int nio=0;
-	int nao=0;
-
-	if(fileo){
-		while( nao<N ){
-			fprintf(fileo, "%d ",matc[nao][nio]);
-			if(nio==(N-1)){
-				nao++;
-				nio=0;
+	fil=0; col=0;
+	if(fileo){		//Si el archivo se leyó exitosamente.
+		while( col<N ){		//Se recorre la matriz.
+			fprintf(fileo, "%d ",matc[col][fil]);	//El valor en la matriz c se escribe.
+			if(fil==(N-1)){
+				col++;
+				fil=0;
 				fprintf(fileo, "\n");
 			}
 			else{
-				nio++;
+				fil++;
 			}
 		}
 	}
+	fclose(fileo);		//Finalmente el archivo de escritura se cierra.
 
-	fclose(fileo);
-
-	for(int i=0;i<pro;i++){
-		sprintf(intt, "%d", i+1);
-		strcpy(namef, "file");
-		strcat(namef,intt);
-		strcat(namef,".txt");	
-		remove(namef);
+	for(int i=0;i<pro;i++){		//Para todos los archivos creados para uso temporal.
+		//Se obtiene el nombre del archivo:
+		sprintf(intt, "%d", i+1); strcpy(namef, "file"); strcat(namef,intt); strcat(namef,".txt");	
+		remove(namef);			//Eliminar archivo.
 	}
 	return 0;
 }

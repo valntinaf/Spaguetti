@@ -15,8 +15,8 @@ int main(int argv, char* argc[]){
 	int matc[N][N];		//Producto de la multiplicación.
 
 	char str[99];
-	int fil=0;			//Será en todos los ciclos el indicador de la fila.
-	int col=0;			//Será en todos los ciclos el indicador de la columna.
+	int fil=0;			//Será en todos los ciclos de lectura a matrices el indicador de la fila.
+	int col=0;			//Será en todos los ciclos de lectura a matrices el indicador de la columna.
 	int temp;			//Es un número temporal que será el dato a agregar en cada una de las posiciones de las matrices.
 	if(filea){
 		do{
@@ -84,18 +84,17 @@ int main(int argv, char* argc[]){
 
 	int nio=0;
 	int nao=0;
-	printf("Multiplicado.\n");
-	FILE* fileo =fopen(argc[4],"w");
+	FILE* fileo =fopen(argc[4],"w");		//Se abre el archivo elegido por el usuario para la escritura de la matriz.
 	if(fileo){
-		while(nao<N){
-			fprintf(fileo, "%d ",matc[nao][nio]);
+		while(nao<N){						//Se recorre la matriz inicialmente por filas.
+			fprintf(fileo, "%d ",matc[nao][nio]);		//Se escriben los datos en el archivo, separados por espacio.
 			if(nio==(N-1)){
 				nao++;
 				nio=0;
-				fprintf(fileo, "\n","");
+				fprintf(fileo, "\n","");				//Cada fila está separada por un salto de línea.
 			}
 			else{
-				nio++;
+				nio++;						
 			}
 		}
 	} 
