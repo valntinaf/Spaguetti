@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <string.h>
 #include <math.h>
 
-#define	READ 0
-#define WRITE 1
 int main(int argv, char* argc[]){
-	
+
 	if(argv<6){
         printf("Ejecute el programa de la forma \"./proc [número_de_filas] [número_de_procesos] [archivo1.txt] [archivo2.txt] [archivo3.txt]\"");
         return 1;
@@ -67,6 +66,7 @@ int main(int argv, char* argc[]){
 
 	fil=0;
 	col=0;
+
 	//printf("Leyendo matriz 2...\n");
 	if(fileb){							//Aquí se realiza el mismo procedimiento pero se llena ahora la matriz b.
 		do{
@@ -84,84 +84,100 @@ int main(int argv, char* argc[]){
 		fclose(fileb);
 	}
 	
-	int nums[N+1];
-	for(int i=0;i<N;i++){
-		nums[i]=0;
-	}
 	//Fin de la lectura de matrices.
 
-	//Se crean las tuberías
-
-	int cont=1, cant=0, cent=0, cint=0,pre=0;;
-	int val=0;
+	int status=0;
+	int cont=1, cant=0, cent=0, cint=0, pos=0, pre=0;
+	long val=0;
+	double div= ((double)N)/((double)pro);
 	int tempe;
-	//printf("Creando archivo %s.\n",argc[4]);
-	FILE* fileo =fopen(argc[5],"w");
 	pid_t wpid=0;
-	while(cont<=pro){
-		if(!fork()){
-			//printf("Proceso creado.\n");
-			pre=(int) ceil( N/pro )+1;
-			
-			while( N-(cont*pre) < pro-cont){
-				//pre=(pro-cont+1)/(N- (cont*pre));
-				pre=pre-1;
-			}
+	FILE* fileo;
+	char namef[20];
+	char intt[10];
 
+	int job[pro];		//Arreglo en donde a cada proceso se le asigna un número de filas.
+	int start[pro];		//Arreglo en donde a cada proceso se le asigna la posición inicial desde donde multiplicar.
+	int sumi=0;
+
+	for(int i=1;i<=pro;i++){	//Se le asigna el trabajo al proceso.
+		
+		start[i-1]=sumi;
+		pre=ceil(div);
+		while( (pro-i+1)*pre > N-sumi ){
+			pre--;
+		}
+		sumi+=pre;
+		job[i-1]=pre;
+	}
+
+	while(cont<=pro){		//Se crean N hijos.
+		if(!fork()){		//Esta condición verifica que sólo los hijos realicen tareas.
+			sprintf(intt, "%d", cont);
+			strcpy(namef, "file");
+			strcat(namef,intt);
+			strcat(namef,".txt");
+			fileo=fopen(namef,"w");		//Cada proceso maneja su propio archivo.
+			pre=job[cont-1];
+			pos=start[cont-1];			
 			cint=0;
 			while(cint<pre){
-				printf("Leyendo fila %d\n", cont-1+cint);
+				//printf("Yo %d, Procesando la fila %d\n",cont,pos+cint);
 				while(cant<N){
-
-				while(cent<N){
-					val+=mata[cont-1+cint][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
-					cent++;
-				}
-				fprintf(fileo, "%d %d\n",(cont-1+cint)*N+cant, val);
-				nums[cant]=val;
+					while(cent<N){
+						val+=mata[pos+cint][cent]*matb[cent][cant];		//En este valor se almacena el valor en cada cuadro de la matriz C.
+						cent++;
+					}
+				fprintf(fileo, "%d %d %d\n",pos+cint,cant,val);
 				val=0;
 				cent=0;
 				cant++;
 			}
+			cant=0;
 			cint++;
 			}
-			exit(0);
+			fclose(fileo);		//El proceso cierra su archivo.
+			exit(0);			//El proceso termina.
 		}
 		cont++;
 	}
-	fclose(fileo);
-	fileo =fopen(argc[5],"r");
-	int fi, co, t=0, status=0;
-
 	while ((wpid = wait(&status)) > 0);
+	
 
-	//printf("Ordenando datos...\n");
+	fileo =fopen(argc[5],"r");
+	int fi, co, t=0;
+
 	cent=0;
 	int g;
-	int mul=N*N*2;
-	while(cent<mul){
-		fscanf(fileo,"%s",str);
-		g=atoi(str);
-		if(!t){
-			fi=g/N;
-			co=g-(fi*N);
-			t=1;
+
+	int cunt=0;
+	while(cunt<pro){		//El padre lee todos los archivos generados por los hijos.
+		sprintf(intt, "%d", cunt+1);
+		strcpy(namef, "file");
+		strcat(namef,intt);
+		strcat(namef,".txt");	
+		fileo=fopen(namef,"r");	
+		if(fileo){
+			while(!feof(fileo)){
+			fscanf(fileo,"%d %d %d\n",&fi,&co,&g);
+			//printf("%d %d \n",g,t);
+				if(fi<N && co<N){
+					matc[fi][co]=g;
+				}
+			}
+			cent++;
 		}
-		else{
-			matc[fi][co]=g;
-			t=0;
-		}
-		cent++;
+		fclose(fileo);
+		cunt++;
 	}
 
-	fclose(fileo);
 	fileo =fopen(argc[5],"w");
 
 	int nio=0;
 	int nao=0;
 
 	if(fileo){
-		while(nao<N){
+		while( nao<N ){
 			fprintf(fileo, "%d ",matc[nao][nio]);
 			if(nio==(N-1)){
 				nao++;
@@ -176,5 +192,12 @@ int main(int argv, char* argc[]){
 
 	fclose(fileo);
 
+	for(int i=0;i<pro;i++){
+		sprintf(intt, "%d", i+1);
+		strcpy(namef, "file");
+		strcat(namef,intt);
+		strcat(namef,".txt");	
+		remove(namef);
+	}
 	return 0;
 }

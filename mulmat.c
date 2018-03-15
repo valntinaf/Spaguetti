@@ -84,7 +84,7 @@ int main(int argv, char* argc[]){
 
 	int nio=0;
 	int nao=0;
-
+	printf("Multiplicado.\n");
 	FILE* fileo =fopen(argc[4],"w");
 	if(fileo){
 		while(nao<N){
