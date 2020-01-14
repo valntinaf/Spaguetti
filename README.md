@@ -32,4 +32,5 @@ Matrix multiplication normal implementation, as well as processes and multithrea
 ./mulmatproc 10 5 matrix_a matrix_b matrix_c
 ```
 
+## Copyright
 Developed by ![@valntinaf](https://github.com/valntinaf) and Omar Espinel.
